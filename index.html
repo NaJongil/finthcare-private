@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>헬스케어 서비스</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        /* 메인 페이지 스타일 */
+        .main-page {
+            display: block;
+        }
+
+        .header {
+            background: url('/biz_main.png') center center / cover no-repeat;
+            color: #333;
+            padding: 30px 20px;
+            text-align: left;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            min-height: 200px;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .main-title.loaded {
+            opacity: 1;
+        }
+
+        .subtitle {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .loading-message {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+        }
+
+        /* 메인 서비스 버튼들 */
+        .main-services {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .service-button {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .service-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #3498db;
+        }
+
+        .service-button-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .service-button-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+
+        .service-button-subtitle {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* 상세 페이지 스타일 */
+        .detail-page {
+            display: none;
+        }
+
+        .detail-header {
+            background: #ededed;
+            color: #333;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .detail-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .detail-content {
+            padding: 30px 20px;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .service-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .service-icon.hospital {
+            background: #c8f7c5;
+            color: #333;
+        }
+
+        .service-icon.checkup {
+            background: #a3d9f0;
+            color: #333;
+        }
+
+        .service-card-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .service-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .service-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .feature-tag {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .book-button {
+            flex: 1;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .detail-button {
+            flex: 1;
+            background: white;
+            color: #3498db;
+            border: 2px solid #3498db;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .book-button:hover {
+            background: linear-gradient(135deg, #2980b9, #1f4788);
+            transform: translateY(-1px);
+        }
+
+        .detail-button:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .process-section {
+            background: #f8f9fa;
+            padding: 30px 20px;
+            margin: 20px 0;
+            border-radius: 16px;
+        }
+
+        .process-title {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .process-step {
+            flex: 1;
+            text-align: center;
+            padding: 20px 10px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #b3b3b3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 auto 10px;
+        }
+
+        .step-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .step-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        /* 푸터 */
+        .footer {
+            background: #ededed;
+            color: #333;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .footer-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .footer-button {
+            flex: 1;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .footer-button.kakao {
+            background: #F7E600;
+            color: #333;
+        }
+
+        .footer-button.phone {
+            background: #b3b3b3;
+            color: white;
+        }
+
+        .footer-button.kakao:hover {
+            background: #e6d100;
+        }
+
+        .footer-button.phone:hover {
+            background: #999999;
+        }
+
+        .footer-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .footer-text {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.5;
+            color: #666;
+        }
+
+        .powered-by {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            opacity: 0.6;
+            color: #999;
+        }
+
+        .notice-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .notice-item {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            padding-left: 12px;
+            position: relative;
+        }
+
+        .notice-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .notice-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8e6cf 0%, #dcedc1 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .highlight.checkup {
+            background: linear-gradient(120deg, #87ceeb 0%, #c0fcf0 100%);
+        }
+
+        .highlight-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .highlight-text {
+            font-size: 14px;
+            color: #555;
+        }
+
+        @media (max-width: 375px) {
+            .process-steps {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .service-card {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .footer-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 메인 페이지 -->
+        <div id="main-page" class="main-page">
+            <div class="header">
+                <div class="header-content">
+                    <div class="loading-message" id="loading-message">
+                        <div>기업 정보를 불러오는 중...</div>
+                    </div>
+                    
+                    <h1 class="main-title" id="main-title"></h1>
+                    <p class="subtitle">임직원과 가족의<br>건강한 삶을 지원합니다.</p>
+                </div>
+            </div>
+
+            <div class="main-services">
+                <div class="service-button" onclick="showDetailPage('specialist')">
+                    <div class="service-button-icon">🏥</div>
+                    <div class="service-button-title">대학병원 명의 추천 예약</div>
+                    <div class="service-button-subtitle">Big6 병원을 쉽고 빠르게</div>
+                </div>
+
+                <div class="service-button" onclick="showDetailPage('checkup')">
+                    <div class="service-button-icon">🔬</div>
+                    <div class="service-button-title">건강검진 추천 예약</div>
+                    <div class="service-button-subtitle">맞춤 큐레이션에 최대 48% 할인까지</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상급종합병원 상세 페이지 -->
+        <div id="specialist-page" class="detail-page">
+            <div class="detail-header">
+                <button class="back-button" onclick="showMainPage()">←</button>
+                <div class="detail-title">대학병원 명의 추천 예약</div>
+            </div>
+
+            <div class="detail-content">
+                <div class="highlight">
+                    <div class="highlight-title">🎯 하루만에 쉽고 빠르게</div>
+                    <div class="highlight-text">큰 병원 명의 예약 완료</div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon hospital">🏥</div>
+                        <div>
+                            <div class="service-card-title">대학병원 명의 추천 예약</div>
+                        </div>
+                    </div>
+                    <div class="service-description">
+                        큰 병원이 필요할 때, 하루만에 Big6 상급종합병원 명의 빠른 예약을 잡아 드립니다.
+                    </div>
+                    <div class="service-features">
+                        <div class="feature-tag">Big6 상급종합병원</div>
+                        <div class="feature-tag">맞춤 명의 추천</div>
+                        <div class="feature-tag">빠른 예약</div>
+                    </div>
+                    <button class="book-button" onclick="bookService('specialist')">
+                        예약 신청하기
+                    </button>
+                </div>
+
+                <div class="process-section">
+                    <h3 class="process-title">📋 서비스 이용 과정</h3>
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <div class="step-title">진료의뢰서 업로드</div>
+                            <div class="step-description">병의원에서 받은 진료의뢰서를 신청서에 업로드합니다</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <div class="step-title">추천 명의 확인</div>
+                            <div class="step-description">카톡으로 추천 명의 정보와 빠른 예약시간을 확인합니다</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <div class="step-title">전문의 선택하면 예약 완료!</div>
+                            <div class="step-description">만나고 싶은 명의를 선택하면 예약이 완료됩니다</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 건강검진 상세 페이지 -->
+        <div id="checkup-page" class="detail-page">
+            <div class="detail-header">
+                <button class="back-button" onclick="showMainPage()">←</button>
+                <div class="detail-title">건강검진 추천 예약</div>
+            </div>
+
+            <div class="detail-content">
+                <div class="highlight checkup">
+                    <div class="highlight-title">🎯 고품질 건강검진을 합리적으로</div>
+                    <div class="highlight-text">맞춤 큐레이션에 최대 48% 할인까지 (20만원~)</div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon checkup">🔬</div>
+                        <div>
+                            <div class="service-card-title">건강검진 추천 예약</div>
+                        </div>
+                    </div>
+                    <div class="service-description">
+                        프리미엄 대학병원 센터부터 편리한 기업형 검진까지, 전문 간호사가 내 몸에 필요한 검진을 큐레이션해 최대 48% 할인된 합리적인 가격으로 예약해 드립니다.
+                    </div>
+                    <div class="service-features">
+                        <div class="feature-tag">세브란스헬스체크업</div>
+                        <div class="feature-tag">서울대병원강남센터</div>
+                        <div class="feature-tag">최대 48% 할인</div>
+                        <div class="feature-tag">종합검진</div>
+                    </div>
+                    <div class="button-group">
+                        <button class="book-button" onclick="bookService('checkup')">
+                            예약 신청하기
+                        </button>
+                        <button class="detail-button" onclick="openDetailLink('checkup')">
+                            검진 프로그램 보기
+                        </button>
+                    </div>
+                </div>
+
+                <div class="process-section">
+                    <h3 class="process-title">📋 서비스 이용 과정</h3>
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <div class="step-title">병원 및 프로그램 선택</div>
+                            <div class="step-description">신청서에서 검진 받을 병원과 프로그램을 선택합니다</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <div class="step-title">전문 간호사 상담</div>
+                            <div class="step-description">전문 간호사와 전화 상담을 통해 프로그램과 날짜를 확정합니다</div>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <div class="step-title">할인 예약 완료</div>
+                            <div class="step-description">최대 48% 할인된 특별가로 건강검진 예약이 완료됩니다</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 푸터 -->
+        <div class="footer">
+            <div class="notice-section">
+                <div class="notice-item">핀스케어는 기업 회원 전용 쉽고 빠른 병원 예약 서비스입니다.</div>
+                <div class="notice-item">큰 병원이 필요할 때, 24시간(영업일) 안에 데이터를 기반으로 대학병원 명의를 추천하고 빠른 예약을 도와 드립니다.</div>
+                <div class="notice-item">건강검진이 필요할 때, 몸 상태와 예산에 맞는 검진센터와 프로그램을 추천하고 최대 48% 할인 예약해 드립니다.</div>
+                <div class="notice-item">서비스 문의 : 10:00 ~ 18:00 (월~금)</div>
+            </div>
+            <div class="footer-buttons">
+                <button class="footer-button kakao" onclick="openKakaoChat()">
+                    💬 카톡 문의
+                </button>
+                <button class="footer-button phone" onclick="callService()">
+                    📞 전화 문의
+                </button>
+            </div>
+            <div class="footer-text">
+                기업회원 전용<br>
+                쉽고 빠른 병원 예약 서비스
+                <div class="powered-by">Powered by FinthCare</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL에서 기업 ID (OrgNameEng) 추출
+        function getCompanyIdFromUrl() {
+            const pathSegments = window.location.pathname.split('/');
+            return pathSegments[pathSegments.length - 1];
+        }
+
+        // 현재 로드된 기업 정보 저장
+        let currentCompanyInfo = null;
+
+        // API에서 기업 정보 가져오기
+        async function fetchCompanyInfo(companyId) {
+            try {
+                const response = await fetch(`/api/company?id=${companyId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.message || 'API Error');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('기업 정보 조회 오류:', error);
+                return null;
+            }
+        }
+
+        // 기업 정보를 페이지에 적용
+        function updateCompanyInfo(companyInfo) {
+            if (!companyInfo) return;
+
+            // 로딩 메시지 숨기기
+            const loadingElement = document.getElementById('loading-message');
+            if (loadingElement) {
+                loadingElement.style.display = 'none';
+            }
+
+            // 메인 타이틀 업데이트
+            const mainTitle = document.getElementById('main-title');
+            if (mainTitle) {
+                mainTitle.innerHTML = `${companyInfo.orgName} 전용<br>프리미엄 의료복지`;
+                mainTitle.classList.add('loaded');
+            }
+
+            // 페이지 제목 업데이트
+            document.title = `헬스케어 서비스 - ${companyInfo.orgName}`;
+        }
+
+        // 페이지 전환 함수
+        function showMainPage() {
+            document.getElementById('main-page').style.display = 'block';
+            document.getElementById('specialist-page').style.display = 'none';
+            document.getElementById('checkup-page').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        function showDetailPage(serviceType) {
+            document.getElementById('main-page').style.display = 'none';
+            document.getElementById('specialist-page').style.display = serviceType === 'specialist' ? 'block' : 'none';
+            document.getElementById('checkup-page').style.display = serviceType === 'checkup' ? 'block' : 'none';
+            window.scrollTo(0, 0);
+        }
+
+        // 예약 신청 함수
+        function bookService(serviceType) {
+            if (!currentCompanyInfo) {
+                alert('기업 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+
+            const baseUrls = {
+                specialist: 'https://forms.finth.care/specialist',
+                checkup: 'https://forms.finth.care/checkup'
+            };
+
+            const url = `${baseUrls[serviceType]}?orgname=${encodeURIComponent(currentCompanyInfo.orgName)}`;
+            
+            window.open(url, '_blank');
+        }
+
+        // 자세히 보기 링크 열기
+        function openDetailLink(serviceType) {
+            const detailUrls = {
+                checkup: 'https://forms.finth.care/checkup-program'
+            };
+
+            if (detailUrls[serviceType]) {
+                window.open(detailUrls[serviceType], '_blank');
+            }
+        }
+
+        // 카카오톡 상담 링크 열기
+        function openKakaoChat() {
+            window.open('http://pf.kakao.com/_xjizPn/chat', '_blank');
+        }
+
+        // 전화 상담
+        function callService() {
+            window.location.href = 'tel:1811-2468';
+        }
+
+        // 페이지 로드 시 기업 정보 가져오기
+        window.addEventListener('DOMContentLoaded', async function() {
+            const companyId = getCompanyIdFromUrl();
+            
+            if (companyId && companyId !== '') {
+                try {
+                    console.log('기업 정보 로딩 중...', companyId);
+                    
+                    // API에서 기업 정보 가져오기
+                    currentCompanyInfo = await fetchCompanyInfo(companyId);
+                    
+                    if (currentCompanyInfo && currentCompanyInfo.orgName) {
+                        updateCompanyInfo(currentCompanyInfo);
+                        console.log('기업 정보 로드 완료:', currentCompanyInfo);
+                    } else {
+                        console.warn('기업 정보를 찾을 수 없습니다.');
+                        // 에러 표시
+                        const loadingElement = document.getElementById('loading-message');
+                        if (loadingElement) {
+                            loadingElement.innerHTML = '<div>기업 정보를 찾을 수 없습니다.<br>URL을 확인해 주세요.</div>';
+                        }
+                    }
+                } catch (error) {
+                    console.error('페이지 로드 중 오류:', error);
+                    const loadingElement = document.getElementById('loading-message');
+                    if (loadingElement) {
+                        loadingElement.innerHTML = '<div>정보를 불러오는 중 오류가 발생했습니다.</div>';
+                    }
+                }
+            } else {
+                console.log('기업 ID가 없습니다.');
+                const loadingElement = document.getElementById('loading-message');
+                if (loadingElement) {
+                    loadingElement.innerHTML = '<div>기업 ID가 필요합니다.<br>올바른 URL로 접속해 주세요.</div>';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
