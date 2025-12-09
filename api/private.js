@@ -16,11 +16,14 @@ module.exports = async (req, res) => {
     }
     
     try {
+        const baseId = process.env.AIRTABLE_BASE_ID;
+        const tableId = process.env.AIRTABLE_TABLE_ID;
+        
         const response = await fetch(
-            `https://api.airtable.com/v0/appTUSvRn9GseZXVk/tblk2nbqDINfkxnnk?filterByFormula={PrivatePhone}='${phone}'`,
+            `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula={PrivatePhone}='${phone}'`,
             {
                 headers: {
-                    'Authorization': `Bearer ${process.env.AIRTABLE_TOKEN}`,
+                    'Authorization': `Bearer ${process.env.AIRTABLE_API_KEY}`,
                     'Content-Type': 'application/json'
                 }
             }
