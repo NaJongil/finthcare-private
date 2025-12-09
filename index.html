@@ -31,7 +31,7 @@
         }
 
         .header {
-            background: url('/biz_main.png') center center / cover no-repeat;
+            background: url('/private_main.png') center center / cover no-repeat;
             color: #333;
             padding: 30px 20px;
             text-align: left;
@@ -463,11 +463,11 @@
             <div class="header">
                 <div class="header-content">
                     <div class="loading-message" id="loading-message">
-                        <div>기업 정보를 불러오는 중...</div>
+                        <div>회원 정보를 불러오는 중...</div>
                     </div>
                     
                     <h1 class="main-title" id="main-title"></h1>
-                    <p class="subtitle">임직원과 가족의<br>건강한 삶을 지원합니다.</p>
+                    <p class="subtitle" id="member-info"></p>
                 </div>
             </div>
 
@@ -607,7 +607,7 @@
         <!-- 푸터 -->
         <div class="footer">
             <div class="notice-section">
-                <div class="notice-item">핀스케어는 기업 회원 전용 쉽고 빠른 병원 예약 서비스입니다.</div>
+                <div class="notice-item">핀스케어는 개인회원 전용 쉽고 빠른 병원 예약 서비스입니다.</div>
                 <div class="notice-item">큰 병원이 필요할 때, 24시간(영업일) 안에 데이터를 기반으로 대학병원 명의를 추천하고 빠른 예약을 도와 드립니다.</div>
                 <div class="notice-item">건강검진이 필요할 때, 몸 상태와 예산에 맞는 검진센터와 프로그램을 추천하고 최대 48% 할인 예약해 드립니다.</div>
                 <div class="notice-item">서비스 문의 : 10:00 ~ 18:00 (월~금)</div>
@@ -621,7 +621,7 @@
                 </button>
             </div>
             <div class="footer-text">
-                기업회원 전용<br>
+                개인회원 전용<br>
                 쉽고 빠른 병원 예약 서비스
                 <div class="powered-by">Powered by FinthCare</div>
             </div>
@@ -629,19 +629,19 @@
     </div>
 
     <script>
-        // URL에서 기업 ID (OrgNameEng) 추출
-        function getCompanyIdFromUrl() {
+        // URL에서 전화번호 추출
+        function getPhoneFromUrl() {
             const pathSegments = window.location.pathname.split('/');
             return pathSegments[pathSegments.length - 1];
         }
 
-        // 현재 로드된 기업 정보 저장
-        let currentCompanyInfo = null;
+        // 현재 로드된 회원 정보 저장
+        let currentMemberInfo = null;
 
-        // API에서 기업 정보 가져오기
-        async function fetchCompanyInfo(companyId) {
+        // API에서 회원 정보 가져오기
+        async function fetchMemberInfo(phone) {
             try {
-                const response = await fetch(`/api/company?id=${companyId}`);
+                const response = await fetch(`/api/private?phone=${phone}`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -655,14 +655,14 @@
                 
                 return data;
             } catch (error) {
-                console.error('기업 정보 조회 오류:', error);
+                console.error('회원 정보 조회 오류:', error);
                 return null;
             }
         }
 
-        // 기업 정보를 페이지에 적용
-        function updateCompanyInfo(companyInfo) {
-            if (!companyInfo) return;
+        // 회원 정보를 페이지에 적용
+        function updateMemberInfo(memberInfo) {
+            if (!memberInfo) return;
 
             // 로딩 메시지 숨기기
             const loadingElement = document.getElementById('loading-message');
@@ -673,12 +673,19 @@
             // 메인 타이틀 업데이트
             const mainTitle = document.getElementById('main-title');
             if (mainTitle) {
-                mainTitle.innerHTML = `${companyInfo.orgName} 전용<br>프리미엄 의료복지`;
+                mainTitle.innerHTML = `개인회원 전용<br>프리미엄 헬스케어`;
                 mainTitle.classList.add('loaded');
             }
 
+            // 회원 정보 표시 (소속 라벨 + 이름)
+            const memberInfoElement = document.getElementById('member-info');
+            if (memberInfoElement) {
+                const affiliation = memberInfo.privateAffiliation || '개인회원';
+                memberInfoElement.innerHTML = `<span style="background: rgba(52, 152, 219, 0.9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; margin-right: 8px;">${affiliation}</span>${memberInfo.privateName} 님`;
+            }
+
             // 페이지 제목 업데이트
-            document.title = `헬스케어 서비스 - ${companyInfo.orgName}`;
+            document.title = `헬스케어 서비스 - ${memberInfo.privateName}`;
         }
 
         // 페이지 전환 함수
@@ -698,8 +705,8 @@
 
         // 예약 신청 함수
         function bookService(serviceType) {
-            if (!currentCompanyInfo) {
-                alert('기업 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+            if (!currentMemberInfo) {
+                alert('회원 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
                 return;
             }
 
@@ -708,7 +715,13 @@
                 checkup: 'https://forms.finth.care/checkup'
             };
 
-            const url = `${baseUrls[serviceType]}?orgname=${encodeURIComponent(currentCompanyInfo.orgName)}`;
+            const params = new URLSearchParams({
+                privateid: currentMemberInfo.privateId,
+                privatename: currentMemberInfo.privateName,
+                privateaffiliation: currentMemberInfo.privateAffiliation
+            });
+
+            const url = `${baseUrls[serviceType]}?${params.toString()}`;
             
             window.open(url, '_blank');
         }
@@ -734,26 +747,26 @@
             window.location.href = 'tel:1811-2468';
         }
 
-        // 페이지 로드 시 기업 정보 가져오기
+        // 페이지 로드 시 회원 정보 가져오기
         window.addEventListener('DOMContentLoaded', async function() {
-            const companyId = getCompanyIdFromUrl();
+            const phone = getPhoneFromUrl();
             
-            if (companyId && companyId !== '') {
+            if (phone && phone !== '') {
                 try {
-                    console.log('기업 정보 로딩 중...', companyId);
+                    console.log('회원 정보 로딩 중...', phone);
                     
-                    // API에서 기업 정보 가져오기
-                    currentCompanyInfo = await fetchCompanyInfo(companyId);
+                    // API에서 회원 정보 가져오기
+                    currentMemberInfo = await fetchMemberInfo(phone);
                     
-                    if (currentCompanyInfo && currentCompanyInfo.orgName) {
-                        updateCompanyInfo(currentCompanyInfo);
-                        console.log('기업 정보 로드 완료:', currentCompanyInfo);
+                    if (currentMemberInfo && currentMemberInfo.privateName) {
+                        updateMemberInfo(currentMemberInfo);
+                        console.log('회원 정보 로드 완료:', currentMemberInfo);
                     } else {
-                        console.warn('기업 정보를 찾을 수 없습니다.');
+                        console.warn('회원 정보를 찾을 수 없습니다.');
                         // 에러 표시
                         const loadingElement = document.getElementById('loading-message');
                         if (loadingElement) {
-                            loadingElement.innerHTML = '<div>기업 정보를 찾을 수 없습니다.<br>URL을 확인해 주세요.</div>';
+                            loadingElement.innerHTML = '<div>회원 정보를 찾을 수 없습니다.<br>URL을 확인해 주세요.</div>';
                         }
                     }
                 } catch (error) {
@@ -764,10 +777,10 @@
                     }
                 }
             } else {
-                console.log('기업 ID가 없습니다.');
+                console.log('전화번호가 없습니다.');
                 const loadingElement = document.getElementById('loading-message');
                 if (loadingElement) {
-                    loadingElement.innerHTML = '<div>기업 ID가 필요합니다.<br>올바른 URL로 접속해 주세요.</div>';
+                    loadingElement.innerHTML = '<div>회원 전용 페이지입니다.<br>올바른 URL로 접속해 주세요.</div>';
                 }
             }
         });
