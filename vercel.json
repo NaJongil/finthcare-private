@@ -2,8 +2,8 @@
   "version": 2,
   "routes": [
     {
-      "src": "/api/company",
-      "dest": "/api/company.js"
+      "src": "/api/private",
+      "dest": "/api/private.js"
     },
     {
       "src": "/(.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg)",
